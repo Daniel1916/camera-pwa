@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Câmera PWA</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body { font-family: Arial; text-align: center; margin: 20px; }
+video, canvas { width: 90%; max-width: 350px; border: 2px solid #000; border-radius: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h2>PWA - Acesso à Câmera</h2>
+<button onclick="abrirCamera()">Abrir Câmera</button>
+<button onclick="trocarCamera()">Trocar Câmera</button>
+<button onclick="capturarFoto()">Capturar Foto</button>
+<br>
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+<script>
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+
+let usandoFrontal = false;
+let streamAtual = null;
+
+async function abrirCamera() {
+    if (streamAtual) streamAtual.getTracks().forEach(t => t.stop());
+    try {
+        streamAtual = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: usandoFrontal ? "user" : "environment" },
+            audio: false
+        });
+        document.getElementById("video").srcObject = streamAtual;
+    } catch (e) { alert("Erro: " + e); }
+}
+function trocarCamera() { usandoFrontal = !usandoFrontal; abrirCamera(); }
+function capturarFoto() {
+    const v = document.getElementById("video");
+    const c = document.getElementById("canvas");
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext("2d").drawImage(v, 0, 0);
+}
+</script>
+</body>
+</html>
